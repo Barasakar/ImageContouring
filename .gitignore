@@ -1,0 +1,72 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+*.pdb
+*.ilk
+
+# Qt specific
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmake.stash
+*.pro.user
+*.pro.user.*
+
+# Visual Studio specific
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build folders
+x64/
+build/
+debug/
+release/
+
+# Ignore all files in the .vs folder
+.vs/
+
+# Binaries and other executable files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Backup files
+*~
+
+# Other files to ignore
+.DS_Store
+Thumbs.db
+
