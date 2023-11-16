@@ -1,3 +1,5 @@
+/* QtWidgetsApplication.h */
+
 #pragma once
 
 #include <QtWidgets/QMainWindow>
@@ -12,6 +14,7 @@ class QtWidgetsApplication : public QMainWindow
     Q_OBJECT
 
 public:
+    QVector<QImage> images;
     QImage image;
     QtWidgetsApplication(QWidget *parent = nullptr);
     ~QtWidgetsApplication();
