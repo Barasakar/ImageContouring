@@ -15,11 +15,12 @@ class QtWidgetsApplication : public QMainWindow
 
 public:
     QVector<QImage> images;
-    QImage image;
     QtWidgetsApplication(QWidget *parent = nullptr);
     ~QtWidgetsApplication();
     void onActionFileTriggered();
-    void errorCheck();
+    void logPrint(QString str);
+    void onSliderValueChanged(int n);
+
 private:
     Ui::QtWidgetsApplicationClass ui;
 };

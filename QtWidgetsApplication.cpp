@@ -8,22 +8,24 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
 {
     ui.setupUi(this);
     connect(ui.actionFile, &QAction::triggered, this, &QtWidgetsApplication::onActionFileTriggered);
+    connect(ui.horizontalSlider, &QSlider::valueChanged, this, &QtWidgetsApplication::onSliderValueChanged);
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
 {}
 
-void QtWidgetsApplication::errorCheck() {
-
+void QtWidgetsApplication::logPrint(QString str) {
+    ui.textEdit->clear();
+    ui.textEdit->append(str);
 }
 
 void QtWidgetsApplication::onActionFileTriggered() {
-    qDebug() << "Opening File...";
+    logPrint("Open file..");
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open File"),
         "",
         tr("All Files (*.*);;Text Files (*.txt)"));
-    qDebug() << "Got filename:" << fileName;
+    logPrint("Got file" + fileName);
     if (!fileName.isEmpty()) {
         qDebug() << "Current selected file path:" << fileName;
         TIFF* tif = TIFFOpen(fileName.toLocal8Bit().constData(), "r");
@@ -38,7 +40,8 @@ void QtWidgetsApplication::onActionFileTriggered() {
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &rows);
 
             numPixels = columns * rows;
-            qDebug() << "Image dimensions:" << columns << "x" << rows;
+            //qDebug() << "Image dimensions:" << columns << "x" << rows;
+            ui.textEdit->append("Image dimensions: " + QString::number(columns) + "x" + QString::number(rows));
 
             do {
                 raster = (uint32*)_TIFFmalloc(numPixels * sizeof(uint32));
@@ -55,28 +58,24 @@ void QtWidgetsApplication::onActionFileTriggered() {
                     qDebug() << "Failed to allocate memory for raster";
                 }
             } while (TIFFReadDirectory(tif));
-            qDebug() << "Finished processing TIFF file";
             TIFFClose(tif);
-            qDebug() << "tif is closed with TIFFClose()";
+            ui.textEdit->append("Number of slides: " + QString::number(images.size()));
             if (!images.isEmpty() && !images[0].isNull()) {
-                if (!images[0].isNull()) {
-                    qDebug() << "Image size:" << images[0].size();
-                    qDebug() << "Image format:" << images[0].format();
-                    qDebug() << "Pixel value at (0,0):" << images[0].pixel(0, 0);
-                }
-                else {
-                    qDebug() << "Image is null";
-                }
+
+                // Set Qt slider's range
+                ui.horizontalSlider->setMinimum(0);
+                ui.horizontalSlider->setMaximum(images.size() - 1); 
+
                 QSize labelSize = ui.label->size();
                 if (labelSize.width() > 0 && labelSize.height() > 0) {
                     
                     QPixmap pixmap = QPixmap::fromImage(images[0]);
-                    qDebug() << "labelSize.width() > 0 && labelSize.height() > 0";
                     if (!pixmap.isNull()) {
                         ui.label->setPixmap(pixmap.scaled(ui.label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
                     }
                     else {
-                        qDebug() << "Failed to create pixmap from image";
+                        logPrint("Failed to create pixmap from image");
+                        //qDebug() << "Failed to create pixmap from image";
                     }
                 }
                 else {
@@ -84,14 +83,17 @@ void QtWidgetsApplication::onActionFileTriggered() {
                 }
             }
             else {
-                qDebug() << "Image is invalid or no images loaded";
+                logPrint("Image is invalid or no images loaded");
             }
-        }
-        else {
-            qDebug() << "Could not open the TIFF file";
-        }
+        }  
+
     }
     else {
         qDebug() << "No file was selected";
     }
+}
+void QtWidgetsApplication::onSliderValueChanged(int n) {
+    qDebug() << "value changed: " << n ;
+    QPixmap pixmap = QPixmap::fromImage(images[n]);
+    ui.label->setPixmap(pixmap.scaled(ui.label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
