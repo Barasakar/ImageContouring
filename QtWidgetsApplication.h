@@ -8,6 +8,11 @@
 #include <iostream>
 #include <qdebug.h>
 #include "tiffio.h"
+#include <QtOpenGLWidgets/qopenglwidget.h>
+#include "imageProcessing.h"
+
+
+
 
 class QtWidgetsApplication : public QMainWindow
 {
@@ -15,12 +20,18 @@ class QtWidgetsApplication : public QMainWindow
 
 public:
     QVector<QImage> images;
+    size_t numPixels;
+    uint32 columns;
+    uint32 rows;
+
     QtWidgetsApplication(QWidget *parent = nullptr);
     ~QtWidgetsApplication();
     void onActionFileTriggered();
     void logPrint(QString str);
     void onSliderValueChanged(int n);
+    void onActionProcessPressed();
 
 private:
     Ui::QtWidgetsApplicationClass ui;
+    imageProcessing caller;
 };

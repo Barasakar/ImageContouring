@@ -7,8 +7,13 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
+
+    setMouseTracking(false);
+
     connect(ui.actionFile, &QAction::triggered, this, &QtWidgetsApplication::onActionFileTriggered);
     connect(ui.horizontalSlider, &QSlider::valueChanged, this, &QtWidgetsApplication::onSliderValueChanged);
+    connect(ui.pushButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionProcessPressed);
+    
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -17,6 +22,18 @@ QtWidgetsApplication::~QtWidgetsApplication()
 void QtWidgetsApplication::logPrint(QString str) {
     ui.textEdit->clear();
     ui.textEdit->append(str);
+}
+
+void QtWidgetsApplication::onActionProcessPressed() {
+    qDebug() << "Button pressed";
+    if (!images.isEmpty()) {
+        caller.getGrayscaleValue(images[0]);
+        //caller.binarizeSingle(images[0]);
+        caller.binarize(images);
+    }
+    else {
+        qDebug() << "There is no image loaded";
+    }
 }
 
 void QtWidgetsApplication::onActionFileTriggered() {
@@ -32,16 +49,19 @@ void QtWidgetsApplication::onActionFileTriggered() {
 
         if (tif) {
             qDebug() << "Successfully opened TIFF file";
-            uint32 columns, rows;
+            images.clear(); // flush the container before starting a new file.
+            uint32 columns_temp, rows_temp;
             size_t numPixels;
             uint32* raster;
 
-            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &columns);
-            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &rows);
+            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &columns_temp);
+            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &rows_temp);
 
-            numPixels = columns * rows;
+            numPixels = columns_temp * rows_temp;
+            columns = columns_temp;
+            rows = rows_temp;
             //qDebug() << "Image dimensions:" << columns << "x" << rows;
-            ui.textEdit->append("Image dimensions: " + QString::number(columns) + "x" + QString::number(rows));
+            ui.textEdit->append("Image dimensions: " + QString::number(rows) + "x" + QString::number(columns));
 
             do {
                 raster = (uint32*)_TIFFmalloc(numPixels * sizeof(uint32));
@@ -97,3 +117,4 @@ void QtWidgetsApplication::onSliderValueChanged(int n) {
     QPixmap pixmap = QPixmap::fromImage(images[n]);
     ui.label->setPixmap(pixmap.scaled(ui.label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
+

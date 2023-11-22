@@ -107,6 +107,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="imageProcessing.cpp" />
     <QtRcc Include="QtWidgetsApplication.qrc" />
     <QtUic Include="QtWidgetsApplication.ui" />
     <QtMoc Include="QtWidgetsApplication.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="imageProcessing.h" />
     <ClInclude Include="QtOpenGLRender.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
