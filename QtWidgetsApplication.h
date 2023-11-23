@@ -10,6 +10,7 @@
 #include "tiffio.h"
 #include <QtOpenGLWidgets/qopenglwidget.h>
 #include "imageProcessing.h"
+#include "qpainter.h"
 
 
 
@@ -29,7 +30,11 @@ public:
     void onActionFileTriggered();
     void logPrint(QString str);
     void onSliderValueChanged(int n);
-    void onActionProcessPressed();
+    void onActionBinarizePressed();
+    void onActionFindMaxPressed();
+    void onActionPlotPressed();
+
+    void plot();
 
 private:
     Ui::QtWidgetsApplicationClass ui;

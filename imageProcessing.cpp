@@ -1,5 +1,6 @@
 #include "imageProcessing.h"
 
+using namespace std;
 
 void imageProcessing::contouringSingle(QImage image) {
 	if (!image.isNull()) {
@@ -18,7 +19,7 @@ void imageProcessing::binarizeSingle(QImage &image) {
 	if (!image.isNull()) {
 		for (int y = 0; y < image.height(); ++y) {
 			for (int x = 0; x < image.width(); ++x) {
-				QColor newColor = (qRed(image.pixel(x, y)) > 55) ? Qt::white : Qt::black;
+				QColor newColor = (qRed(image.pixel(x, y)) > 100) ? Qt::white : Qt::black;
 				image.setPixelColor(x, y, newColor);
 				++counter;
 			}
@@ -36,6 +37,7 @@ void imageProcessing::binarize(QVector<QImage>& images) {
 }
 
 void imageProcessing::getGrayscaleValue(QImage image) {
+	// A currently useless function.
 	if (!image.isNull()) {
 		for (int y = 0; y < image.height(); y++) {
 			for (int x = 0; x < image.width(); x++) {
@@ -44,5 +46,37 @@ void imageProcessing::getGrayscaleValue(QImage image) {
 			}
 		}
 
+	}
+}
+
+void imageProcessing::findLocalMaximaSingle(QImage image) {
+
+	if (!image.isNull()) {
+		for (int x = 0; x < image.width(); x++) {
+			QRgb currentMaxValue = image.pixel(x, 0);
+			pair<int, int> currentXY(x, 0);
+
+			for (int y = 0; y < image.height(); y++) {
+				QRgb pixelValue = image.pixel(x, y);
+
+				if (qRed(pixelValue) >= qRed(currentMaxValue)) { // Assuming grayscale
+					currentMaxValue = pixelValue;
+					currentXY.second = y;
+				}
+			}
+			allMaxima.push_back(currentMaxValue); // Storing the QRgb value
+			allMaximaLocation.push_back(currentXY); // Storing the location
+		}
+	}
+	qDebug() << "Number of maxima: " << allMaxima.size();
+	printMaxima();
+}
+
+void imageProcessing::printMaxima() {
+	for (QVector<QRgb>::Iterator it = allMaxima.begin(); it != allMaxima.end(); ++it) {
+		qDebug() << "value: " << *it;
+	}
+	for (auto it : allMaximaLocation) {
+		qDebug() << "(" << it.first << ", " << it.second << ")";
 	}
 }

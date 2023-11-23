@@ -12,8 +12,9 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
 
     connect(ui.actionFile, &QAction::triggered, this, &QtWidgetsApplication::onActionFileTriggered);
     connect(ui.horizontalSlider, &QSlider::valueChanged, this, &QtWidgetsApplication::onSliderValueChanged);
-    connect(ui.pushButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionProcessPressed);
-    
+    connect(ui.binarizeButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionBinarizePressed);
+    connect(ui.findMaximaButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionFindMaxPressed);
+    connect(ui.plotButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionPlotPressed);
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -24,8 +25,8 @@ void QtWidgetsApplication::logPrint(QString str) {
     ui.textEdit->append(str);
 }
 
-void QtWidgetsApplication::onActionProcessPressed() {
-    qDebug() << "Button pressed";
+void QtWidgetsApplication::onActionBinarizePressed() {
+    qDebug() << "Binarize Button pressed";
     if (!images.isEmpty()) {
         caller.getGrayscaleValue(images[0]);
         //caller.binarizeSingle(images[0]);
@@ -35,6 +36,27 @@ void QtWidgetsApplication::onActionProcessPressed() {
         qDebug() << "There is no image loaded";
     }
 }
+
+void QtWidgetsApplication::onActionFindMaxPressed() {
+    qDebug() << "Find Maxima Button pressed";
+    if (!images.isEmpty()) {
+        caller.findLocalMaximaSingle(images[0]);
+    }
+    else {
+        qDebug() << "There is no image loaded";
+    }
+}
+
+void QtWidgetsApplication::onActionPlotPressed() {
+    qDebug() << "Plot Button pressed";
+    if (!images.isEmpty()) {
+        plot();
+    }
+    else {
+        qDebug() << "There is no image loaded";
+    }
+}
+
 
 void QtWidgetsApplication::onActionFileTriggered() {
     logPrint("Open file..");
@@ -118,3 +140,28 @@ void QtWidgetsApplication::onSliderValueChanged(int n) {
     ui.label->setPixmap(pixmap.scaled(ui.label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
+
+void QtWidgetsApplication::plot() {
+    if (images.isEmpty()) return;
+
+    QImage currentImage = images[0];
+    QPixmap pixmap = QPixmap::fromImage(currentImage);
+
+    QPainter painter(&pixmap);
+    painter.setPen(QPen(Qt::red, 1)); // Increased width for visibility
+
+    for (int i = 0; i < caller.allMaximaLocation.size() - 1; i++) {
+        QPoint point1(caller.allMaximaLocation.at(i).first, caller.allMaximaLocation.at(i).second);
+        QPoint point2(caller.allMaximaLocation.at(i + 1).first, caller.allMaximaLocation.at(i + 1).second);
+        painter.drawLine(point1, point2);
+    }
+
+    painter.end();
+
+    if (!painter.isActive()) {
+        qDebug() << "Painter is not active. There might be an issue.";
+    }
+
+    ui.label->setPixmap(pixmap);
+    ui.label->update(); // Ensure the label is updated
+}
