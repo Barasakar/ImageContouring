@@ -18,6 +18,9 @@ public:
 	// helper functions:
 	void findLocalMaximaSingle(QImage image);
 	void printMaxima();
+	cv::Mat QtImageToCvMat(const QImage& inputImage, bool inCloneImageData);
+	QImage CvMatToQtImage(const cv::Mat& inputImage, bool inCloneImageData);
+	QImage applyOtsuThreshold(QImage inputImage);
 
 
 	QVector<int> grayscaleValues;
