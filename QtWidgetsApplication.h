@@ -21,6 +21,7 @@ class QtWidgetsApplication : public QMainWindow
 
 public:
     QVector<QImage> images;
+    QVector<QImage> copiedImages;
     size_t numPixels;
     uint32 columns;
     uint32 rows;
@@ -33,6 +34,8 @@ public:
     void onActionBinarizePressed();
     void onActionFindMaxPressed();
     void onActionPlotPressed();
+    void onActionContourPressed();
+    void onActionClearPressed();
 
     void plot();
 

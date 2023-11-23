@@ -7,10 +7,14 @@
 class imageProcessing {
 
 public:
-	void contouringSingle(QImage image);
+
+	void contouringSingle(QImage binaryImage);
 	void contouring(QVector<QImage> images);
+
 	void binarizeSingle(QImage &image);
 	void binarize(QVector <QImage>& images);
+
+
 	void getGrayscaleValue(QImage image);
 	
 

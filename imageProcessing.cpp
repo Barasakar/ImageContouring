@@ -2,10 +2,14 @@
 
 using namespace std;
 
-void imageProcessing::contouringSingle(QImage image) {
-	if (!image.isNull()) {
-		qDebug() << image.isGrayscale();
-		qDebug() << image.pixelColor(0, 0);
+
+
+
+
+
+void imageProcessing::contouringSingle(QImage binaryImage) {
+	if (!binaryImage.isNull()) {
+		
 	}
 	
 }
@@ -155,10 +159,16 @@ QImage imageProcessing::applyOtsuThreshold(QImage inputImage) {
 		else {
 			grayMat = mat;
 		}
+		cv::Mat preprocessedMat;
+		cv::GaussianBlur(grayMat, preprocessedMat, cv::Size(5, 5), 0);
 
+		
+
+		// Apply Otsu threshold
 		cv::Mat threshMat;
-		double thresholdValue = cv::threshold(grayMat, threshMat, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-		qDebug() << "Otsu Threashold value: " << thresholdValue;
+		double otsuThreshold = cv::threshold(preprocessedMat, threshMat, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+		qDebug() << "Otsu Threshold value:" << otsuThreshold;
 
 		return CvMatToQtImage(threshMat);
 	}
@@ -167,5 +177,6 @@ QImage imageProcessing::applyOtsuThreshold(QImage inputImage) {
 		return QImage();
 	}
 }
+
 
 

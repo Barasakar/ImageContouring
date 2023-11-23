@@ -15,6 +15,11 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
     connect(ui.binarizeButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionBinarizePressed);
     connect(ui.findMaximaButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionFindMaxPressed);
     connect(ui.plotButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionPlotPressed);
+    connect(ui.contourButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionContourPressed);
+    connect(ui.clearButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionClearPressed);
+
+
+
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -57,6 +62,17 @@ void QtWidgetsApplication::onActionPlotPressed() {
     }
 }
 
+void QtWidgetsApplication::onActionContourPressed() {
+    if (!images.isEmpty()) {
+        
+    }
+}
+
+void QtWidgetsApplication::onActionClearPressed() {
+    for (int i = 0; i < copiedImages.size(); i++) {
+        images[i] = copiedImages[i].copy();
+    }
+}
 
 void QtWidgetsApplication::onActionFileTriggered() {
     logPrint("Open file..");
@@ -92,7 +108,7 @@ void QtWidgetsApplication::onActionFileTriggered() {
                         QImage tempImage((uchar*)raster, columns, rows, QImage::Format_ARGB32);
                         QImage copiedImage = tempImage.copy(); // Deep copy of the image
                         images.push_back(copiedImage);
-                        
+                        copiedImages.push_back(copiedImage);
                     }
                     _TIFFfree(raster);
                 }
