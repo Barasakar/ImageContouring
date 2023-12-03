@@ -64,12 +64,11 @@ void QtWidgetsApplication::onActionPlotPressed() {
 
 void QtWidgetsApplication::onActionContourPressed() {
     if (!images.isEmpty()) {
-        imageProcessing::Contouring contouringInstance(&caller, images[0], 0.0);
-        contouringInstance.printSuccess();
+        imageProcessing::Contouring contouringInstance(&caller, images, 0.0);
+        contouringInstance.generateContours(images);
     }
-    //imageProcessing::Contouring contouringInstance(&caller, images[0], 0.0); // Use an appropriate QImage from your QVector<QImage> images
-    //contouringInstance.connectIntersectionPoints();
 }
+
 
 void QtWidgetsApplication::onActionClearPressed() {
     for (int i = 0; i < copiedImages.size(); i++) {

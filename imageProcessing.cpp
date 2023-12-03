@@ -169,46 +169,72 @@ void imageProcessing::Contouring::printSuccess() {
 }
 
 
-QPointF imageProcessing::Contouring::linearInterpolation(int f1, int f2, int x1, int y1, int x2, int y2) {
+QPointF imageProcessing::Contouring::linearInterpolation(int x1, int y1, int x2, int y2) {
 	QPointF point;
 
-	if (f1 == 0 && f2 == 0) {
-		point.setX((x1 + x2) / 2.0);
-		point.setY((y1 + y2) / 2.0);
-	}
-	else if (f1 == 0) {
-		point.setX(x1);
-		point.setY(y1);
-	}
-	else if (f2 == 0) {
-		point.setX(x2);
-		point.setY(y2);
-	}
-	else {
-		int numerator = f1;
-		int denominator = f1 - f2;
-
-		if (denominator != 0) {
-			double t = static_cast<double>(numerator) / denominator;
-			point.setX(x1 + t * (x2 - x1));
-			point.setY(y1 + t * (y2 - y1));
-		}
-	}
+	point.setX((x1 + x2) / 2.0);
+	point.setY((y1 + y2) / 2.0);
 
 	return point;
 }
 
 
 /*
-Using a bit mask here to make things easier. 0001, 0011, 0111, 1111.
+true = 255 white
 */
 int imageProcessing::Contouring::getEdgeCase(const PixelBlock& block) const {
-		int edgeCase = 0;
-		if (block.topLeft) edgeCase |= 1;
-		if (block.topRight) edgeCase |= 2;
-		if (block.bottomLeft) edgeCase |= 4;
-		if (block.bottomRight) edgeCase |= 8;
+
+	if (block.topLeft && block.topRight && block.bottomLeft && block.bottomRight) {
+		return 0;
+	}
+	if (block.topLeft && block.topRight && !block.bottomLeft && block.bottomRight) {
+		return 1;
+	}
+	if (block.topLeft && block.topRight && block.bottomLeft && !block.bottomRight) {
+		return 2;
+	}
+	if (block.topLeft && block.topRight && !block.bottomLeft && !block.bottomRight) {
+		return 3;
+	}
+	if (block.topLeft && !block.topRight && block.bottomLeft && block.bottomRight) {
+		return 4;
+	}
+	if (block.topLeft && !block.topRight && !block.bottomLeft && block.bottomRight) {
+		return 5;
+	}
+	if (block.topLeft && !block.topRight && block.bottomLeft && !block.bottomRight) {
+		return 6;
+	}
+	if (block.topLeft && !block.topRight && !block.bottomLeft && !block.bottomRight) {
+		return 7;
+	}
+	if (!block.topLeft && block.topRight && block.bottomLeft && block.bottomRight) {
+		return 8;
+	}
+	if (!block.topLeft && block.topRight && !block.bottomLeft && block.bottomRight) {
+		return 9;
+	}
+	if (!block.topLeft && block.topRight && block.bottomLeft && !block.bottomRight) {
+		return 10;
+	}
+	if (!block.topLeft && block.topRight && !block.bottomLeft && !block.bottomRight) {
+		return 11;
+	}
+	if (!block.topLeft && !block.topRight && block.bottomLeft && block.bottomRight) {
+		return 12;
+	}
+	if (!block.topLeft && !block.topRight && !block.bottomLeft && block.bottomRight) {
+		return 13;
+	}
+	if (!block.topLeft && !block.topRight && block.bottomLeft && !block.bottomRight) {
+		return 14;
+	}
+	if (!block.topLeft && !block.topRight && !block.bottomLeft && !block.bottomRight) {
+		return 15;
+	}
+
 }
+
 
 /*
 * values[0] = top-left corner
@@ -216,97 +242,218 @@ int imageProcessing::Contouring::getEdgeCase(const PixelBlock& block) const {
 * values[2] = bottom-left corner
 * values[3] = bottom-right corner
 */
-QPointF imageProcessing::Contouring::calculateIntersection(const PixelBlock& block) {
-	QPointF intersectionPoint;
+//QPointF imageProcessing::Contouring::calculateIntersection(const PixelBlock& block) {
+//	QPointF intersectionPoint;
+//	int edgeCase = getEdgeCase(block);
+//	int x1 = block.x1;
+//	int x2 = block.x2;
+//	int y1 = block.y1;
+//	int y2 = block.y2;
+//
+//	switch (edgeCase) {
+//	case 0:
+//	case 7:
+//	case 8:
+//		return QPointF();
+//	case 1:
+//		intersectionPoint = linearInterpolation(block.values[0], block.values[1], x1, y1, x2, y1);
+//		break;
+//	case 2:
+//		if (block.values[0] == 255) {
+//			intersectionPoint = QPointF(x1, y1);
+//		}
+//		else {
+//			intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x1, y2);
+//		}
+//		break;
+//	case 3:
+//		intersectionPoint = linearInterpolation(block.values[1], block.values[2], x1, y1, x2, y2);
+//		break;
+//	case 4:
+//		if (block.values[1] == 255) {
+//			intersectionPoint = QPointF(x2, y1);
+//		}
+//		else {
+//			intersectionPoint = linearInterpolation(block.values[1], block.values[3], x2, y1, x2, y2);
+//		}
+//		break;
+//	case 5:
+//		intersectionPoint = linearInterpolation(block.values[2], block.values[3], x1, y1, x2, y2);
+//		break;
+//
+//	case 9:
+//		intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x2, y2);
+//		break;
+//	case 10:
+//		if (block.values[2] == 255) {
+//			intersectionPoint = QPointF(x1, y2);
+//		}
+//		else {
+//			intersectionPoint = linearInterpolation(block.values[2], block.values[3], x1, y2, x2, y2);
+//		}
+//		break;
+//	case 12:
+//		intersectionPoint = linearInterpolation(block.values[0], block.values[1], x1, y1, x1, y2);
+//		break;
+//	case 13:
+//		if (block.values[0] == 255) {
+//			intersectionPoint = QPointF(x1, y1);
+//		}
+//		else {
+//			intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x1, y2);
+//		}
+//		break;
+//	case 14:
+//		intersectionPoint = linearInterpolation(block.values[1], block.values[2], x1, y1, x2, y2);
+//		break;
+//	}
+//
+//	return intersectionPoint;
+//}
+
+
+void imageProcessing::Contouring::getLines(const PixelBlock& block) {
 	int edgeCase = getEdgeCase(block);
-	int x1 = block.x1;
-	int x2 = block.x2;
-	int y1 = block.y1;
-	int y2 = block.y2;
-
+	QPointF intersectionPoint_1;
+	QPointF intersectionPoint_2;
+	LineSegment line;
 	switch (edgeCase) {
-	case 0:
-	case 7:
-	case 8:
-		return QPointF();
-	case 1:
-		intersectionPoint = linearInterpolation(block.values[0], block.values[1], x1, y1, x2, y1);
-		break;
-	case 2:
-		if (block.values[0] == 1) {
-			intersectionPoint = QPointF(x1, y1);
-		}
-		else {
-			intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x1, y2);
-		}
-		break;
-	case 3:
-		intersectionPoint = linearInterpolation(block.values[1], block.values[2], x1, y1, x2, y2);
-		break;
-	case 4:
-		if (block.values[1] == 1) {
-			intersectionPoint = QPointF(x2, y1);
-		}
-		else {
-			intersectionPoint = linearInterpolation(block.values[1], block.values[3], x2, y1, x2, y2);
-		}
-		break;
-	case 5:
-		intersectionPoint = linearInterpolation(block.values[2], block.values[3], x1, y1, x2, y2);
-		break;
-
-	case 9:
-		intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x2, y2);
-		break;
-	case 10:
-		if (block.values[2] == 1) {
-			intersectionPoint = QPointF(x1, y2);
-		}
-		else {
-			intersectionPoint = linearInterpolation(block.values[2], block.values[3], x1, y2, x2, y2);
-		}
-		break;
-	case 12:
-		intersectionPoint = linearInterpolation(block.values[0], block.values[1], x1, y1, x1, y2);
-		break;
-	case 13:
-		if (block.values[0] == 1) {
-			intersectionPoint = QPointF(x1, y1);
-		}
-		else {
-			intersectionPoint = linearInterpolation(block.values[0], block.values[2], x1, y1, x1, y2);
-		}
-		break;
-	case 14:
-		intersectionPoint = linearInterpolation(block.values[1], block.values[2], x1, y1, x2, y2);
-		break;
+		case 0:
+		case 15:
+			return;
+		case 1:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 2:
+			intersectionPoint_1 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 3:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 4:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 5:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+			intersectionPoint_1 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 6:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 7:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 8:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 9:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 10:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 11:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y4, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 12:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 13:
+			intersectionPoint_1 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
+		    intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
+		case 14:
+			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
+			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
+			line.start = intersectionPoint_1;
+			line.end = intersectionPoint_2;
+			lineSegments.push_back(line);
 	}
-
-	return intersectionPoint;
+		
 }
 
-QVector<QPointF> imageProcessing::Contouring::getIntersectionPointsSingle(QImage& image) {
+void imageProcessing::Contouring::march(QImage& image) {
 	for (int y = 0; y < image.height() - 1; y++) {
 		for (int x = 0; x < image.width() - 1; x++) {
 			PixelBlock block;
 
+			block.topLeft = (qRed(image.pixel(x, y)) == 255);
+			block.topRight = (qRed(image.pixel(x + 1, y)) == 255);
+			block.bottomLeft = (qRed(image.pixel(x, y + 1)) == 255);
+			block.bottomRight = (qRed(image.pixel(x + 1, y + 1)) == 255);
+
+			//top-left
 			block.x1 = x;
 			block.y1 = y;
+			
+			//top-right
 			block.x2 = x + 1;
-			block.y2 = y + 1;
+			block.y2 = y;
+			
+			//bootom-left
+			block.x3 = x;
+			block.y3 = y + 1;
+			
+			//bottom-right
+			block.x4 = x + 1;
+			block.y4 = y + 1;
 
 			block.values[0] = qRed(image.pixel(x, y));
 			block.values[1] = qRed(image.pixel(x + 1, y));
 			block.values[2] = qRed(image.pixel(x, y + 1));
 			block.values[3] = qRed(image.pixel(x + 1, y + 1));
 
-			QPointF intersectionPoint = calculateIntersection(block);
-
-			intersectionPoints.push_back(intersectionPoint);
+			getLines(block);
 		}
 	}
-
-	return intersectionPoints;
+	
 }
 
 
@@ -315,13 +462,13 @@ bool imageProcessing::Contouring::isPointConnected(const QPointF& point) {
 }
 
 
-double imageProcessing::Contouring::calculateDistance(QPointF p1, QPointF p2) {
-	double p1_x = p1.rx();
-	double p1_y = p1.ry();
-	double p2_x = p2.rx();
-	double p2_y = p2.ry();
+qreal imageProcessing::Contouring::calculateDistance(QPointF p1, QPointF p2) {
+	qreal p1_x = p1.rx();
+	qreal p1_y = p1.ry();
+	qreal p2_x = p2.rx();
+	qreal p2_y = p2.ry();
 
-	return sqrt(pow((p1_x - p2_x), 2) + pow((p1_y - p2_y), 2));
+	return qSqrt(qPow((p1_x - p2_x), 2) + qPow((p1_y - p2_y), 2));
 }
 
 
@@ -337,42 +484,26 @@ void imageProcessing::Contouring::markPointAsConnected(QPointF p) {
 }
 
 
-void imageProcessing::Contouring::generateContours() {
-	// Step 1: Identify the Starting Point
-	QPointF startingPoint = intersectionPoints[0];
+void imageProcessing::Contouring::generateContours(QVector<QImage>& images) {
 
-	// Step 2: Find the Nearest Unconnected Point
-	QPointF currentPoint = startingPoint;
-	QPointF nearestPoint;
-	bool contourClosed = false;
+	for (int i = 0; i < images.length(); i++) {
+		march(images[i]);
+		lineSegmentsAll.push_back(lineSegments);
+		lineSegments.clear();
+	}
 
-	while (!contourClosed) {
-		double minDistance = std::numeric_limits<double>::max(); // Initialize with a large value
+	for (int i = 0; i < images.length(); i++) {
+		QImage& currentImage = images[i]; 
+		QPainter painter(&currentImage); 
+		painter.setPen(QPen(Qt::red, 1));
 
-		// Iterate through unconnected points and find the nearest one
-		for (const QPointF& unconnectedPoint : intersectionPoints) {
-			if (!isPointConnected(unconnectedPoint)) { // Implement this function
-				double distance = calculateDistance(currentPoint, unconnectedPoint); // Implement this function
-				if (distance < minDistance) {
-					minDistance = distance;
-					nearestPoint = unconnectedPoint;
-				}
-			}
+		for (const auto& line : lineSegmentsAll[i]) {
+			painter.drawLine(line.start, line.end);
 		}
 
-		// Step 3: Connect the Points
-		connectPoints(currentPoint, nearestPoint); // Implement this function
-		contourPoints.push_back(currentPoint);
-
-		// Mark the nearest point as connected
-		markPointAsConnected(nearestPoint); // Implement this function
-
-		// Update the current point for the next iteration
-		currentPoint = nearestPoint;
-
-		// Step 4: Check if the contour is closed (return to the starting point)
-		if (currentPoint == startingPoint) {
-			contourClosed = true;
-		}
+		painter.end();
 	}
 }
+
+
+
