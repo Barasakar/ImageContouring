@@ -7,7 +7,6 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
-
     setMouseTracking(false);
 
     connect(ui.actionFile, &QAction::triggered, this, &QtWidgetsApplication::onActionFileTriggered);
@@ -17,9 +16,9 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
     connect(ui.plotButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionPlotPressed);
     connect(ui.contourButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionContourPressed);
     connect(ui.clearButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionClearPressed);
-
-
-
+    connect(ui.removeArch, &QPushButton::pressed, this, &QtWidgetsApplication::onActionRemoveArchPressed);
+    connect(ui.sliderNum, &QSpinBox::valueChanged, this, &QtWidgetsApplication::onActionSpinBoxValChanged);
+    
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -45,7 +44,10 @@ void QtWidgetsApplication::onActionBinarizePressed() {
 void QtWidgetsApplication::onActionFindMaxPressed() {
     qDebug() << "Find Maxima Button pressed";
     if (!images.isEmpty()) {
-        caller.findLocalMaximaSingle(images[0]);
+        for (int i = 0; i < images.size(); i++) {
+            caller.drawQuadratic(images[i]);
+        }
+       
     }
     else {
         qDebug() << "There is no image loaded";
@@ -69,6 +71,19 @@ void QtWidgetsApplication::onActionContourPressed() {
     }
 }
 
+void QtWidgetsApplication::onActionRemoveArchPressed() {
+    qDebug() << "remove Arch Button pressed";
+    if (!images.isEmpty()) {
+        caller.removeArch(images, 15);
+    }
+
+}
+
+
+void QtWidgetsApplication::onActionSpinBoxValChanged(int value) {
+    onSliderValueChanged(value);
+    
+}
 
 void QtWidgetsApplication::onActionClearPressed() {
     for (int i = 0; i < copiedImages.size(); i++) {
@@ -126,6 +141,8 @@ void QtWidgetsApplication::onActionFileTriggered() {
                 ui.horizontalSlider->setMinimum(0);
                 ui.horizontalSlider->setMaximum(images.size() - 1); 
 
+                ui.sliderNum->setMinimum(0);
+                ui.sliderNum->setMaximum(images.size() - 1);
                 QSize labelSize = ui.label->size();
                 if (labelSize.width() > 0 && labelSize.height() > 0) {
                     

@@ -28,14 +28,16 @@ public:
 
     QtWidgetsApplication(QWidget *parent = nullptr);
     ~QtWidgetsApplication();
-    void onActionFileTriggered();
+    void onActionFileTriggered(); // controls the open.. menu
     void logPrint(QString str);
-    void onSliderValueChanged(int n);
-    void onActionBinarizePressed();
-    void onActionFindMaxPressed();
-    void onActionPlotPressed();
-    void onActionContourPressed();
-    void onActionClearPressed();
+    void onSliderValueChanged(int n);// controls the slider
+    void onActionBinarizePressed(); // binarize button
+    void onActionFindMaxPressed(); // find maxima button
+    void onActionPlotPressed();    // plot button, but not being used.
+    void onActionContourPressed(); // contour button
+    void onActionClearPressed();    // clear button
+    void onActionRemoveArchPressed();  // remove arches button
+    void onActionSpinBoxValChanged(int value);
 
     void plot();
 

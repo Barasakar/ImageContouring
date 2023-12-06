@@ -75,7 +75,7 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\OpenCV\opencv\build\include;C:\Program Files %28x86%29\GnuWin32\include;D:\Jonathan\GeometricComputing\123\123\x64\Release\uic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\eigen-3.4.0\eigen-3.4.0;C:\OpenCV\opencv\build\include;C:\Program Files %28x86%29\GnuWin32\include;D:\Jonathan\GeometricComputing\123\123\x64\Release\uic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\OpenCV\opencv\build\x64\vc16\lib;C:\Program Files %28x86%29\GnuWin32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
