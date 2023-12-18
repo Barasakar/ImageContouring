@@ -46,6 +46,7 @@ void QtWidgetsApplication::onActionFindMaxPressed() {
     if (!images.isEmpty()) {
         for (int i = 0; i < images.size(); i++) {
             caller.drawQuadratic(images[i]);
+            caller.drawMedian(images[i], caller.medianValues[i]);
         }
        
     }

@@ -32,11 +32,16 @@ public:
 	void drawQuadratic(QImage& image);
 	void removeArchSingle(QImage& image, int thickness, Eigen::VectorXd& coefficients);
 	void removeArch(QVector<QImage>& images, int thickness);
+	void drawMedian(QImage& image, double medianValue);
+
 	cv::Mat QtImageToCvMat(const QImage& inputImage, bool inCloneImageData);
 	QImage CvMatToQtImage(const cv::Mat& inputImage, bool inCloneImageData);
 	QImage applyOtsuThreshold(QImage inputImage);
+	
+
 
 	QVector<int> grayscaleValues;
+	QVector<double> medianValues;
 	QVector<QRgb> allMaxima;
 	QVector< std::pair<int, int> > allMaximaLocation; //{first, second} = {x, y}
 	Eigen::VectorXd coefficients;

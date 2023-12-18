@@ -116,22 +116,25 @@ void imageProcessing::formPolynomialSingleDraw(QImage& image) {
 			first_index.push_back(peaksLocation[0]);
 			frame.push_back(x);
 		}
-		/*qDebug() << "peaksVal: " << peaksVal.size();
-		qDebug() << "peaksLocation: " << peaksLocation.size();*/
+		//qDebug() << "peaksVal: " << peaksVal.size();
+		//qDebug() << "peaksLocation: " << peaksLocation.size();
 	}
 	QVector<int> temp_value(first_index);
 	double medianValue;
 	calculateMedian(temp_value, medianValue);
-	qDebug() << "medianValue: " << medianValue;
+	medianValues.push_back(medianValue);
+	//qDebug() << "medianValue: " << medianValue;
 	QVector<int> final_index;
 	QVector<int> final_frame;
 
 	//qDebug() << "First index size: " << first_index.size();
 	
 	for (int i = 0; i < first_index.size(); ++i) {
-		if (150 < first_index[i] && first_index[i] < medianValue - 160) {
+		//150 < first_index[i] && first_index[i] < medianValue - 160
+		if (first_index[i] < medianValue + 30 && first_index[i] > medianValue - 30) {
 			final_index.push_back(first_index[i]);
 			final_frame.push_back(frame[i]);
+			// The following code is only for drawing.
 			QPixmap pixmap = QPixmap::fromImage(image);
 			QPainter painter(&pixmap);
 			QPen pen(Qt::red);
@@ -160,7 +163,7 @@ void imageProcessing::formPolynomialSingleDraw(QImage& image) {
 	double peak_frame = -b / (2 * a); // x-coordinate
 	double peak = (4 * a * c - b * b) / (4 * a); // y-coordinate aka the peak.
 
-	qDebug() << "New Peak[x, y]: " << "[" << round(peak_frame) << ", " << round(peak) << "]";
+	//qDebug() << "New Peak[x, y]: " << "[" << round(peak_frame) << ", " << round(peak) << "]";
 
 	//QPixmap pixmap = QPixmap::fromImage(image);
 	//QPainter painter(&pixmap);
@@ -205,6 +208,18 @@ void imageProcessing::drawQuadratic(QImage& image) {
 
 }
 
+void imageProcessing::drawMedian(QImage& image, double medianValue) {
+	QPixmap pixmap = QPixmap::fromImage(image);
+	QPainter painter(&pixmap);
+	QPen pen(Qt::green, 2);
+	painter.setPen(pen);
+	QPoint startPoint(0, medianValue);
+	QPoint endPoint(image.width() - 1, medianValue);
+	painter.drawLine(startPoint, endPoint);
+	painter.end();
+	image = pixmap.toImage();
+}
+
 void imageProcessing::formPolynomialSingleNoDraw(QImage& image) {
 	QVector<int> first_index;
 	QVector<int> frame;
@@ -231,12 +246,12 @@ void imageProcessing::formPolynomialSingleNoDraw(QImage& image) {
 	//qDebug() << "First index size: " << first_index.size();
 
 	for (int i = 0; i < first_index.size(); ++i) {
-		if (150 < first_index[i] && first_index[i] < medianValue - 160) {
+		//if (150 < first_index[i] && first_index[i] < medianValue - 160) {
 			final_index.push_back(first_index[i]);
 			final_frame.push_back(frame[i]);
 
 
-		}
+		//}
 	}
 	polyfit(final_frame, final_index, coefficients, 2);
 
@@ -413,15 +428,16 @@ QImage imageProcessing::applyOtsuThreshold(QImage inputImage) {
 			grayMat = mat;
 		}
 		cv::Mat preprocessedMat;
+
+		// Gaussian Blur 
 		cv::GaussianBlur(grayMat, preprocessedMat, cv::Size(5, 5), 0);
 
 		
 
 		// Apply Otsu threshold
 		cv::Mat threshMat;
-		double otsuThreshold = cv::threshold(preprocessedMat, threshMat, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-
-		qDebug() << "Otsu Threshold value:" << otsuThreshold;
+		cv::threshold(preprocessedMat, threshMat, 0, 255, cv::THRESH_TOZERO | cv::THRESH_OTSU);
+		// otsuValues.push_back(cv::threshold(preprocessedMat, threshMat, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU));
 
 		return CvMatToQtImage(threshMat);
 	}
@@ -595,24 +611,28 @@ void imageProcessing::Contouring::getLines(const PixelBlock& block) {
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 2:
 			intersectionPoint_1 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 3:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 4:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 5:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
@@ -624,30 +644,35 @@ void imageProcessing::Contouring::getLines(const PixelBlock& block) {
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 6:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 7:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 8:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 9:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 10:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
@@ -659,30 +684,37 @@ void imageProcessing::Contouring::getLines(const PixelBlock& block) {
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 11:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x2, block.y2);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y4, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 12:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
 			intersectionPoint_2 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 13:
 			intersectionPoint_1 = linearInterpolation(block.x2, block.y2, block.x4, block.y4);
 		    intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
 		case 14:
 			intersectionPoint_1 = linearInterpolation(block.x1, block.y1, block.x3, block.y3);
 			intersectionPoint_2 = linearInterpolation(block.x3, block.y3, block.x4, block.y4);
 			line.start = intersectionPoint_1;
 			line.end = intersectionPoint_2;
 			lineSegments.push_back(line);
+			break;
+		default:
+			break;
 	}
 		
 }
