@@ -18,7 +18,7 @@ QtWidgetsApplication::QtWidgetsApplication(QWidget* parent)
     connect(ui.clearButton, &QPushButton::pressed, this, &QtWidgetsApplication::onActionClearPressed);
     connect(ui.removeArch, &QPushButton::pressed, this, &QtWidgetsApplication::onActionRemoveArchPressed);
     connect(ui.sliderNum, &QSpinBox::valueChanged, this, &QtWidgetsApplication::onActionSpinBoxValChanged);
-    
+    connect(ui.saveButton, &QPushButton::pressed, this, &QtWidgetsApplication::saveTiff);
 }
 
 QtWidgetsApplication::~QtWidgetsApplication()
@@ -75,7 +75,7 @@ void QtWidgetsApplication::onActionContourPressed() {
 void QtWidgetsApplication::onActionRemoveArchPressed() {
     qDebug() << "remove Arch Button pressed";
     if (!images.isEmpty()) {
-        caller.removeArch(images, 15);
+        caller.removeArch(images, 5);
     }
 
 }
@@ -90,7 +90,48 @@ void QtWidgetsApplication::onActionClearPressed() {
     for (int i = 0; i < copiedImages.size(); i++) {
         images[i] = copiedImages[i].copy();
     }
+    caller.thresholdImages.clear();
 }
+
+void QtWidgetsApplication::saveTiff() {
+    TIFF* tif = TIFFOpen("ProcessedImage.tif", "w");
+
+    if (!tif) {
+        qDebug() << "Error opening TIFF file for writing";
+        return;
+    }
+
+    for (const QImage& image : images) {
+        QImage grayImage = image.convertToFormat(QImage::Format_Grayscale8);
+
+        int width = grayImage.width();
+        int height = grayImage.height();
+
+        TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+        TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+        TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+        TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+
+        for (int y = 0; y < height; y++) {
+            if (TIFFWriteScanline(tif, grayImage.scanLine(y), y, 0) < 0) {
+                qDebug() << "Error writing TIFF file";
+                TIFFClose(tif);
+                return;
+            }
+        }
+        TIFFWriteDirectory(tif);
+    }
+
+
+    TIFFClose(tif);
+    logPrint("Successfully saved the image");
+}
+
+
+
 
 void QtWidgetsApplication::onActionFileTriggered() {
     logPrint("Open file..");
@@ -109,10 +150,12 @@ void QtWidgetsApplication::onActionFileTriggered() {
             uint32 columns_temp, rows_temp;
             size_t numPixels;
             uint32* raster;
+            uint16 samplesPerPixel;
 
             TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &columns_temp);
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &rows_temp);
-
+            TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel);
+            qDebug() << "Samples per pixel: " << samplesPerPixel;
             numPixels = columns_temp * rows_temp;
             columns = columns_temp;
             rows = rows_temp;

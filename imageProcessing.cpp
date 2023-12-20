@@ -3,20 +3,12 @@
 using namespace std;
 using namespace Eigen;
 
-void imageProcessing::binarizeSingle(QImage &image) {
-	/*int counter = 0;
-	if (!image.isNull()) {
-		for (int y = 0; y < image.height(); ++y) {
-			for (int x = 0; x < image.width(); ++x) {
-				QColor newColor = (qRed(image.pixel(x, y)) > 100) ? Qt::white : Qt::black;
-				image.setPixelColor(x, y, newColor);
-				++counter;
-			}
-		}
+//void imageProcessing::binarizeSingle(QImage &image) {
+//	image = applyOtsuThreshold(image);
+//}
 
-	}
-	counter = 0;*/
-	image = applyOtsuThreshold(image);
+void imageProcessing::binarizeSingle(QImage& image) {
+	thresholdImages.push_back(applyOtsuThreshold(image));
 }
 
 void imageProcessing::binarize(QVector<QImage>& images) {
@@ -208,6 +200,8 @@ void imageProcessing::drawQuadratic(QImage& image) {
 
 }
 
+
+
 void imageProcessing::drawMedian(QImage& image, double medianValue) {
 	QPixmap pixmap = QPixmap::fromImage(image);
 	QPainter painter(&pixmap);
@@ -246,12 +240,10 @@ void imageProcessing::formPolynomialSingleNoDraw(QImage& image) {
 	//qDebug() << "First index size: " << first_index.size();
 
 	for (int i = 0; i < first_index.size(); ++i) {
-		//if (150 < first_index[i] && first_index[i] < medianValue - 160) {
+		if (first_index[i] < medianValue + 30 && first_index[i] > medianValue - 30) {
 			final_index.push_back(first_index[i]);
 			final_frame.push_back(frame[i]);
-
-
-		//}
+		}
 	}
 	polyfit(final_frame, final_index, coefficients, 2);
 
@@ -283,8 +275,9 @@ void imageProcessing::formPolynomialDraw(QVector<QImage>& images) {
 }
 
 void imageProcessing::removeArch(QVector<QImage>& images, int thickness) {
-	for (int i = 0; i < images.size(); ++i) {
-		formPolynomialSingleNoDraw(images[i]);
+	binarize(images);
+	for (int i = 0; i < thresholdImages.size(); ++i) {
+		formPolynomialSingleNoDraw(thresholdImages[i]);
 		removeArchSingle(images[i], thickness, this->coefficients);
 	}
 }
@@ -305,6 +298,9 @@ void imageProcessing::removeArchSingle(QImage& image, int thickness, VectorXd& c
 			int newY = static_cast<int>(y) + dy;
 			if (newY >= 0 && newY < image.height()) {
 				image.setPixel(x, newY, qRgb(0, 0, 0));
+				for (int i = y; i > 0; --i) {
+					image.setPixel(x, i, qRgb(0, 0, 0));
+				}
 				//qDebug() << "Modifying pixel at (" << x << ", " << newY << ")";
 			}
 		}

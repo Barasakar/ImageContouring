@@ -39,7 +39,7 @@ public:
 	QImage applyOtsuThreshold(QImage inputImage);
 	
 
-
+	QVector<QImage> thresholdImages;
 	QVector<int> grayscaleValues;
 	QVector<double> medianValues;
 	QVector<QRgb> allMaxima;

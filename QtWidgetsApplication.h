@@ -38,6 +38,8 @@ public:
     void onActionClearPressed();    // clear button
     void onActionRemoveArchPressed();  // remove arches button
     void onActionSpinBoxValChanged(int value);
+    void saveTiff();
+
 
     void plot();
 
