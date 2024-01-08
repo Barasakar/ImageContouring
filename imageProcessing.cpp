@@ -3,20 +3,28 @@
 using namespace std;
 using namespace Eigen;
 
-//void imageProcessing::binarizeSingle(QImage &image) {
-//	image = applyOtsuThreshold(image);
-//}
+void imageProcessing::binarizeSingleDraw(QImage &image) {
+	image = applyOtsuThreshold(image);
+}
+
+void imageProcessing::binarizeDraw(QVector<QImage>& images) {
+	for (int i = 0; i < images.size(); i++) {
+		binarizeSingleDraw(images[i]);
+	}
+
+}
 
 void imageProcessing::binarizeSingle(QImage& image) {
 	thresholdImages.push_back(applyOtsuThreshold(image));
 }
-
 void imageProcessing::binarize(QVector<QImage>& images) {
 	for (int i = 0; i < images.size(); i++) {
 		binarizeSingle(images[i]);
 	}
 	
 }
+
+
 
 void imageProcessing::getGrayscaleValue(QImage image) {
 	// A currently useless function.
@@ -120,26 +128,25 @@ void imageProcessing::formPolynomialSingleDraw(QImage& image) {
 	QVector<int> final_frame;
 
 	//qDebug() << "First index size: " << first_index.size();
-	
+	QPixmap pixmap = QPixmap::fromImage(image);
+	QPainter painter(&pixmap);
+
+	QPen pen(Qt::red);
+	pen.setWidth(3);
+	painter.setPen(pen);
+	painter.setBrush(Qt::NoBrush);
+	int radius = 4;
 	for (int i = 0; i < first_index.size(); ++i) {
 		//150 < first_index[i] && first_index[i] < medianValue - 160
 		if (first_index[i] < medianValue + 30 && first_index[i] > medianValue - 30) {
 			final_index.push_back(first_index[i]);
 			final_frame.push_back(frame[i]);
-			// The following code is only for drawing.
-			QPixmap pixmap = QPixmap::fromImage(image);
-			QPainter painter(&pixmap);
-			QPen pen(Qt::red);
-			pen.setWidth(3);
-			painter.setPen(pen);
-			painter.setBrush(Qt::NoBrush);
-			int radius = 4;
+			// The following code is only for drawing the points that plot the parabola.
 			painter.drawEllipse(QPointF(frame[i], first_index[i]), radius, radius);
-			painter.end();
-			image = pixmap.toImage();
-
 		}
 	}
+	painter.end();
+	image = pixmap.toImage();
 	polyfit(final_frame, final_index, coefficients, 2);
 
 	VectorXd X(image.height());
@@ -155,24 +162,12 @@ void imageProcessing::formPolynomialSingleDraw(QImage& image) {
 	double peak_frame = -b / (2 * a); // x-coordinate
 	double peak = (4 * a * c - b * b) / (4 * a); // y-coordinate aka the peak.
 
-	//qDebug() << "New Peak[x, y]: " << "[" << round(peak_frame) << ", " << round(peak) << "]";
-
-	//QPixmap pixmap = QPixmap::fromImage(image);
-	//QPainter painter(&pixmap);
-	//QPen pen(Qt::red);
-	//pen.setWidth(3);
-	//painter.setPen(pen);
-	//painter.setBrush(Qt::NoBrush);
-	//int radius = 4;
-	//painter.drawEllipse(QPointF(peak_frame, peak), radius, radius);
-	//painter.end();
-	//image = pixmap.toImage();
-	 // drawQuadratic(image, coefficients);
-	 //removeArch(image, 15, coefficients);
+	qDebug() << "New Peak[x, y]: " << "[" << round(peak_frame) << ", " << round(peak) << "]";
 }
 
 
 void imageProcessing::drawQuadratic(QImage& image) {
+	binarizeSingleDraw(image);
 	formPolynomialSingleDraw(image);
 	QPixmap pixmap = QPixmap::fromImage(image);
 	QPainter painter(&pixmap);

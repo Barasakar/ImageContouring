@@ -7,12 +7,15 @@
 #include <QHashFunctions>
 #include "qpainter.h"
 #include <Eigen/Dense>
+#include <cuda.h>
 
 
 class imageProcessing {
 
 public:
-	void binarizeSingle(QImage &image);
+	void binarizeSingleDraw(QImage &image);
+	void binarizeSingle(QImage& image);
+	void binarizeDraw(QVector <QImage>& images);
 	void binarize(QVector <QImage>& images);
 
 
